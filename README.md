@@ -29,6 +29,36 @@ Some prompts to answer:
 
 You can include a simple diagram or bullet list if helpful.
 
+Mental Map:
+
+Input: user_prefs dict (genre, mood, energy) defined in main.py
+Process: load_songs() reads every row from songs.csv → recommend_songs() loops over all songs, calls a scoring function per song, collects (song, score, explanation) tuples → sorts by score descending → slices top k
+Output: Ranked list of top-k (song, score, explanation) tuples printed to the terminal
+
+flowchart TD
+A([User Preferences\ngenre · mood · energy]) --> D
+B([data/songs.csv]) --> C[load_songs\nparse each CSV row\ninto a song dict]
+C --> D[recommend_songs\nuser_prefs · songs · k]
+
+    D --> E{For each song\nin the catalog}
+
+    E --> F[score_song\nGenre match?\nMood match?\nEnergy delta?]
+    F --> G[(song, score, explanation)]
+    G --> E
+
+    E -->|All songs scored| H[Sort all scored songs\nby score descending]
+    H --> I[Slice top-k results]
+    I --> J([Output\nTop K Recommendations\ntitle · score · explanation])
+
+Diagram review — does it accurately trace a single song?
+
+A row in songs.csv enters via load_songs as a dict.
+Inside recommend_songs, the loop passes that dict to score_song alongside user_prefs.
+score_song computes a numeric score (genre/mood match + energy closeness) and builds an explanation string.
+The resulting (song, score, explanation) tuple is collected.
+After all songs are processed, the full list is sorted and trimmed to top-k.
+main.py prints each tuple — that single song now appears at its earned rank.
+
 ---
 
 ## Getting Started
@@ -41,6 +71,8 @@ You can include a simple diagram or bullet list if helpful.
    python -m venv .venv
    source .venv/bin/activate      # Mac or Linux
    .venv\Scripts\activate         # Windows
+
+   ```
 
 2. Install dependencies
 
@@ -101,12 +133,11 @@ Write 1 to 2 paragraphs here about what you learned:
 - about how recommenders turn data into predictions
 - about where bias or unfairness could show up in systems like this
 
-
 ---
 
 ## 7. `model_card_template.md`
 
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}  
+Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}
 
 ```markdown
 # 🎧 Model Card - Music Recommender Simulation
@@ -158,6 +189,7 @@ Describe your dataset.
 Where does your recommender work well
 
 You can think about:
+
 - Situations where the top results "felt right"
 - Particular user profiles it served well
 - Simplicity or transparency benefits
@@ -169,6 +201,7 @@ You can think about:
 Where does your recommender struggle
 
 Some prompts:
+
 - Does it ignore some genres or moods
 - Does it treat all users as if they have the same taste shape
 - Is it biased toward high energy or one genre by default
@@ -181,6 +214,7 @@ Some prompts:
 How did you check your system
 
 Examples:
+
 - You tried multiple user profiles and wrote down whether the results matched your expectations
 - You compared your simulation to what a real app like Spotify or YouTube tends to recommend
 - You wrote tests for your scoring logic
@@ -208,4 +242,4 @@ A few sentences about what you learned:
 - What surprised you about how your system behaved
 - How did building this change how you think about real music recommenders
 - Where do you think human judgment still matters, even if the model seems "smart"
-
+```
