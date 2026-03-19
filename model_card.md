@@ -135,3 +135,4 @@ Prompts:
 - How this changed the way you think about music recommendation apps
 
 Building VibeFinder made clear how much a recommender's behavior is shaped by decisions that look small on paper, like assigning genre a weight of 2 instead of 1. A scoring function can look reasonable for the common case while behaving in unexpected ways at the edges. Discovering that the +4.0 categorical bonus can completely override a large energy mismatch changed how I think about apps like Spotify. When a recommendation feels off, it often means my actual preference fell into an edge case the scoring logic wasn't built to handle.
+I need to check the work of AI tools to understand the logic of calculating the scores and figuring out the distributions.

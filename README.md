@@ -11,7 +11,7 @@ Your goal is to:
 - Evaluate what your system gets right and wrong
 - Reflect on how this mirrors real world AI recommenders
 
-Replace this paragraph with your own summary of what your version does.
+THE VIBEFINDER PRO generates ranked song recommendations from a fixed catalog of 18 tracks based on a user's stated genre, mood, and energy preferences. It assumes the user can articulate their preferences upfront — it does not learn from listening history or implicit feedback. This is a classroom simulation built to explore how scoring logic, feature weighting, and edge cases shape the behavior of a recommender system.
 
 ---
 
@@ -34,6 +34,8 @@ Mental Map:
 Input: user_prefs dict (genre, mood, energy) defined in main.py
 Process: load_songs() reads every row from songs.csv → recommend_songs() loops over all songs, calls a scoring function per song, collects (song, score, explanation) tuples → sorts by score descending → slices top k
 Output: Ranked list of top-k (song, score, explanation) tuples printed to the terminal
+
+![Terminal output showing top recommendations](image%203.jpg)
 
 flowchart TD
 A([User Preferences\ngenre · mood · energy]) --> D
@@ -105,6 +107,10 @@ Use this section to document the experiments you ran. For example:
 - What happened when you changed the weight on genre from 2.0 to 0.5
 - What happened when you added tempo or valence to the score
 - How did your system behave for different types of users
+
+![Standard Profiles — results and key insights](image%202.jpg)
+
+![Adversarial and Edge-Case Profiles — bugs exposed](image%201.jpg)
 
 ---
 
