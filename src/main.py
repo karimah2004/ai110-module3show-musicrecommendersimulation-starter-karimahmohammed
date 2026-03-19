@@ -9,19 +9,37 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
+from tabulate import tabulate
 from recommender import load_songs, recommend_songs
 
 
 def print_recommendations(label: str, user_prefs: dict, songs: list, k: int = 5) -> None:
-    print(f"\n{'=' * 40}")
-    print(f"  {label}")
-    print(f"  Prefs: {user_prefs}")
-    print("=" * 40)
     recommendations = recommend_songs(user_prefs, songs, k=k)
-    for i, (song, score, explanation) in enumerate(recommendations, start=1):
-        print(f"\n#{i}  {song['title']} by {song['artist']}")
-        print(f"    Score : {score:.2f}")
-        print(f"    Why   : {explanation}")
+
+    prefs_str = "  ".join(f"{k}: {v}" for k, v in user_prefs.items())
+    header = f"  {label}  |  {prefs_str}"
+    print(f"\n{'─' * len(header)}")
+    print(header)
+    print(f"{'─' * len(header)}")
+
+    rows = []
+    for rank, (song, score, explanation) in enumerate(recommendations, start=1):
+        rows.append([
+            rank,
+            song["title"],
+            song["artist"],
+            song["genre"],
+            f"{score:.2f}",
+            explanation,
+        ])
+
+    print(tabulate(
+        rows,
+        headers=["#", "Title", "Artist", "Genre", "Score", "Reasons"],
+        tablefmt="rounded_outline",
+        colalign=("center", "left", "left", "left", "center", "left"),
+    ))
+    print()
 
 
 # --- Standard profiles ---
