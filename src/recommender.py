@@ -37,9 +37,25 @@ class Recommender:
     def __init__(self, songs: List[Song]):
         self.songs = songs
 
-    def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
-        """Return the top k songs ranked by score against the user profile."""
-        def song_score(song: Song) -> float:
+    def recommend(
+        self,
+        user: UserProfile,
+        k: int = 5,
+        artist_penalty: float = 0.5,
+        genre_penalty: float = 0.3,
+    ) -> List[Song]:
+        """Return the top k songs using greedy re-ranking with a diversity penalty.
+
+        After all songs are scored normally, each slot is filled by picking the
+        candidate with the highest *effective* score:
+
+            effective = base_score
+                        - artist_penalty * (# already-selected songs by same artist)
+                        - genre_penalty  * (# already-selected songs of same genre)
+
+        This prevents the same artist or genre from dominating the top results.
+        """
+        def base_score(song: Song) -> float:
             score = 0.0
             if song.genre == user.favorite_genre:
                 score += 2.0
@@ -48,7 +64,25 @@ class Recommender:
             score += 1.0 - abs(song.energy - user.target_energy)
             return score
 
-        return sorted(self.songs, key=song_score, reverse=True)[:k]
+        remaining = sorted(self.songs, key=base_score, reverse=True)
+        selected: List[Song] = []
+
+        while len(selected) < k and remaining:
+            selected_artists = [s.artist for s in selected]
+            selected_genres = [s.genre for s in selected]
+
+            best_song = max(
+                remaining,
+                key=lambda s: (
+                    base_score(s)
+                    - selected_artists.count(s.artist) * artist_penalty
+                    - selected_genres.count(s.genre) * genre_penalty
+                ),
+            )
+            remaining.remove(best_song)
+            selected.append(best_song)
+
+        return selected
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
         """Return a plain-language explanation of why a song was recommended."""
@@ -100,8 +134,52 @@ def load_songs(csv_path: str) -> List[Dict]:
             songs.append(row)
     return songs
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """Score every song, sort by score descending, and return the top k results."""
+def recommend_songs(
+    user_prefs: Dict,
+    songs: List[Dict],
+    k: int = 5,
+    artist_penalty: float = 0.5,
+    genre_penalty: float = 0.3,
+) -> List[Tuple[Dict, float, str]]:
+    """Score every song then greedily pick the top k with a diversity penalty.
+
+    Each slot is filled by the candidate with the highest effective score:
+
+        effective = base_score
+                    - artist_penalty * (# already-selected songs by same artist)
+                    - genre_penalty  * (# already-selected songs of same genre)
+
+    The returned score reflects the effective (post-penalty) value so the
+    explanation accurately represents why a song landed at its position.
+    """
     scored = [(song, *score_song(user_prefs, song)) for song in songs]
     scored.sort(key=lambda x: x[1], reverse=True)
-    return scored[:k]
+
+    selected: List[Tuple[Dict, float, str]] = []
+    remaining = list(scored)
+
+    while len(selected) < k and remaining:
+        selected_artists = [s[0]["artist"] for s in selected]
+        selected_genres = [s[0]["genre"] for s in selected]
+
+        best = max(
+            remaining,
+            key=lambda item: (
+                item[1]
+                - selected_artists.count(item[0]["artist"]) * artist_penalty
+                - selected_genres.count(item[0]["genre"]) * genre_penalty
+            ),
+        )
+        remaining.remove(best)
+
+        song, base, explanation = best
+        artist_count = selected_artists.count(song["artist"])
+        genre_count = selected_genres.count(song["genre"])
+        penalty = artist_count * artist_penalty + genre_count * genre_penalty
+
+        if penalty > 0:
+            explanation += f", diversity penalty (-{penalty:.2f})"
+
+        selected.append((song, base - penalty, explanation))
+
+    return selected

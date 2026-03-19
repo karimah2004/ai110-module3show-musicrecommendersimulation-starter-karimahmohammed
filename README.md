@@ -112,6 +112,24 @@ Use this section to document the experiments you ran. For example:
 
 ![Adversarial and Edge-Case Profiles — bugs exposed](image%201.jpg)
 
+### Diversity Penalty Results
+
+After implementing greedy re-ranking with an artist penalty (−0.5) and genre penalty (−0.3), the same profiles were re-run. Repeat artists and genres are now penalized in later slots and the penalty is shown explicitly in each explanation.
+
+**Standard profiles with diversity penalty:**
+
+![High-Energy Pop with diversity penalty](use%201.jpg)
+
+![Chill Lofi with diversity penalty](use%202.jpg)
+
+![Deep Intense Rock with diversity penalty](use%203.jpg)
+
+**Edge-case profiles with diversity penalty:**
+
+![Edge case — Conflicting energy and mood with diversity penalty](use%204.jpg)
+
+![Edge case — Nonexistent genre (k-pop) with diversity penalty](use%205.jpg)
+
 ---
 
 ## Limitations and Risks
